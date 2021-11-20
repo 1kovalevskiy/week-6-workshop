@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"sync"
+	"time"
 
 	"github.com/Shopify/sarama"
 	"github.com/ozonmp/week-6-workshop/kafka"
@@ -39,7 +40,7 @@ func CreateOrder(ctx context.Context, message *sarama.ConsumerMessage) error {
 	defer db.Unlock()
 
 	if _, ok := db.Orders[order.OrderID]; ok {
-		fmt.Printf("Order with ID %d already exists", order.OrderID)
+		fmt.Printf("Order with ID %d already exists\n", order.OrderID)
 		return nil
 	}
 
@@ -47,13 +48,14 @@ func CreateOrder(ctx context.Context, message *sarama.ConsumerMessage) error {
 	db.OrdersStatuses[order.OrderID] = OrderCreated
 
 	if rand.Intn(10) == 1 {
-		fmt.Printf("Make order ID %d as failed", order.OrderID)
+		fmt.Printf("Make order ID %d as failed\n", order.OrderID)
 		err = kafka.SendMessage(producer, "cancel_order", message.Value)
 		if err != nil {
 			return err
 		}
 	}
 
+	err = kafka.SendMessage(producer, "control_products", message.Value)
 
 	return nil
 }
@@ -90,7 +92,7 @@ func CancelOrder(ctx context.Context, message *sarama.ConsumerMessage) error {
 	defer db.Unlock()
 
 	if _, ok := db.Orders[order.OrderID]; ok {
-		fmt.Printf("Order with ID %d canceled", order.OrderID)
+		fmt.Printf("Order with ID %d canceled\n", order.OrderID)
 		delete(db.Orders, order.OrderID)
 		return nil
 	}
@@ -102,6 +104,9 @@ func main() {
 	brokers := []string{"127.0.0.1:9095", "127.0.0.1:9096", "127.0.0.1:9097"}
 
 	ctx := context.Background()
+
+	db.Orders = make(map[int64]protos.Order)
+	db.OrdersStatuses = make(map[int64]int)
 
 	var err error
 	producer, err = kafka.NewSyncProducer(brokers)
@@ -122,8 +127,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	for {
-
-	}
+	time.Sleep(time.Minute * 10)
 }
 
