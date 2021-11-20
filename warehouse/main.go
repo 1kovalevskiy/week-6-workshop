@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	reserveProducts = "reserve_products"
+	controlProducts = "control_products"
 	cancelOrder     = "cancel_order"
 	commitOrder     = "commit_order"
 
@@ -61,8 +61,10 @@ func handleReserveOrders(ctx context.Context, message *sarama.ConsumerMessage) e
 	}
 
 	if orderOk {
+		fmt.Printf("order %v is ok\n", order.OrderID)
 		err = kafka.SendMessage(producer, commitOrder, message.Value)
 	} else {
+		fmt.Printf("order %v is out of stock\n", order.OrderID)
 		err = kafka.SendMessage(producer, cancelOrder, message.Value)
 	}
 	if err != nil {
@@ -86,7 +88,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = kafka.StartConsuming(ctx, brokers, reserveProducts, consumerGroup, handleReserveOrders)
+	err = kafka.StartConsuming(ctx, brokers, controlProducts, consumerGroup, handleReserveOrders)
 	if err != nil {
 		log.Fatal(err)
 	}
