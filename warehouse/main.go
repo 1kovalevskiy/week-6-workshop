@@ -72,5 +72,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	kafka.StartConsuming(ctx, brokers, reserveProducts, handleReserveOrders)
+	err = kafka.StartConsuming(ctx, brokers, reserveProducts, handleReserveOrders)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for {
+	}
 }
