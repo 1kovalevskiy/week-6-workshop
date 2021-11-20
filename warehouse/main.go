@@ -17,6 +17,8 @@ const (
 	reserveProducts = "reserve_products"
 	cancelOrder     = "cancel_order"
 	commitOrder     = "commit_order"
+
+	consumerGroup = "warehouse_service"
 )
 
 var producer sarama.SyncProducer
@@ -26,6 +28,18 @@ func checkAndReserv(product *protos.Product) error {
 		fmt.Printf("%v is out of stock\n", product.SKU)
 		return errors.New("out of stock")
 	}
+	return nil
+}
+
+func handleCancelOrders(ctx context.Context, message *sarama.ConsumerMessage) error {
+	var order protos.Order
+
+	err := proto.Unmarshal(message.Value, &order)
+	if err != nil {
+		fmt.Printf("can't unmarshall: %v\n", err)
+		return err
+	}
+	fmt.Printf("cancle order %v\n", order.OrderID)
 	return nil
 }
 
@@ -72,10 +86,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = kafka.StartConsuming(ctx, brokers, reserveProducts, handleReserveOrders)
+	err = kafka.StartConsuming(ctx, brokers, reserveProducts, consumerGroup, handleReserveOrders)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	err = kafka.StartConsuming(ctx, brokers, cancelOrder, consumerGroup, handleCancelOrders)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for {
 	}
 }

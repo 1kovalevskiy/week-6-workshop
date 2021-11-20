@@ -8,7 +8,6 @@ import (
 	"github.com/Shopify/sarama"
 )
 
-
 type consumeFunction func(ctx context.Context, message *sarama.ConsumerMessage) error
 
 type consumer struct {
@@ -39,19 +38,18 @@ func (consumer *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 	return nil
 }
 
-func StartConsuming(ctx context.Context, brokers []string, topic string, consumeFunction consumeFunction) error {
+func StartConsuming(ctx context.Context, brokers []string, topic string, group string, consumeFunction consumeFunction) error {
 
 	config := sarama.NewConfig()
 
 	config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
 	config.Consumer.Offsets.Initial = sarama.OffsetOldest
 
-	consumerGroup, err := sarama.NewConsumerGroup(brokers, "analytic", config)
+	consumerGroup, err := sarama.NewConsumerGroup(brokers, group, config)
 
 	if err != nil {
 		return err
 	}
-
 
 	consumer := consumer{
 		fn: consumeFunction,
@@ -67,7 +65,6 @@ func StartConsuming(ctx context.Context, brokers []string, topic string, consume
 			}
 		}
 	}()
-
 
 	return nil
 }

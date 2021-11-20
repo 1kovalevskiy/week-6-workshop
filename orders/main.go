@@ -16,7 +16,7 @@ import (
 
 type DB struct {
 	sync.Mutex
-	Orders map[int64]protos.Order
+	Orders         map[int64]protos.Order
 	OrdersStatuses map[int64]int
 }
 
@@ -26,6 +26,8 @@ var producer sarama.SyncProducer
 const (
 	OrderCreated = iota
 	OrderCommited
+
+	consumerGroup = "order_service"
 )
 
 func CreateOrder(ctx context.Context, message *sarama.ConsumerMessage) error {
@@ -114,19 +116,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = kafka.StartConsuming(ctx, brokers, "create_order", CreateOrder)
+	err = kafka.StartConsuming(ctx, brokers, "create_order", consumerGroup, CreateOrder)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = kafka.StartConsuming(ctx, brokers, "commit_order", CommitOrder)
+	err = kafka.StartConsuming(ctx, brokers, "commit_order", consumerGroup, CommitOrder)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = kafka.StartConsuming(ctx, brokers, "cancel_order", CancelOrder)
+	err = kafka.StartConsuming(ctx, brokers, "cancel_order", consumerGroup, CancelOrder)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	time.Sleep(time.Minute * 10)
 }
-
