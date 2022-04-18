@@ -1,4 +1,4 @@
-module github.com/ozonmp/week-6-workshop/protos
+module github.com/ozon-edu-go-2021/week-6-workshop/protos
 
 go 1.16
 

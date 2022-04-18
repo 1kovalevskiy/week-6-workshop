@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/ozonmp/week-6-workshop/kafka"
-	"github.com/ozonmp/week-6-workshop/protos"
+	"github.com/ozon-edu-go-2021/week-6-workshop/kafka"
+	"github.com/ozon-edu-go-2021/week-6-workshop/protos"
 	"google.golang.org/protobuf/proto"
 )
 

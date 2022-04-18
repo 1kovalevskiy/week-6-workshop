@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package protos;
 
-option go_package = "github.com/ozonmp/week-6-workshop/protos;protos";
+option go_package = "github.com/ozon-edu-go-2021/week-6-workshop/protos;protos";
 
 message Order {
   int64 UserID = 1;
